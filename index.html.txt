@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hooda Children's Hospital</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:#f5f7fa;color:#1a1a2e;min-height:100vh;}
+
+.edit-bar{background:#1a1a2e;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-size:13px;position:sticky;top:0;z-index:300;}
+.edit-bar .eb-left{display:flex;align-items:center;gap:8px;}
+.edit-bar .eb-badge{background:#F59E0B;color:#1a1a2e;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.edit-bar button{background:#fff;color:#1a1a2e;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.edit-bar .save-btn{background:#22C55E;color:#fff;}
+
+[contenteditable="true"]{outline:2px dashed #F59E0B;outline-offset:2px;border-radius:4px;cursor:text;min-width:20px;display:inline-block;}
+[contenteditable="true"]:focus{outline:2px solid #F59E0B;background:rgba(245,158,11,0.08);}
+.edit-mode .editable-hint{display:block;}
+.editable-hint{display:none;font-size:10px;color:#F59E0B;font-weight:600;margin-top:2px;}
+
+.nav{background:#1565C0;color:#fff;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.edit-mode .nav{top:44px;}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.nav-title{font-size:15px;font-weight:700;line-height:1.2;}
+.nav-sub{font-size:11px;opacity:0.8;}
+.nav-emergency{background:#C62828;color:#fff;border:none;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+
+.page{display:none;padding:16px;max-width:480px;margin:0 auto;padding-bottom:80px;}
+.page.active{display:block;}
+
+.hero{background:linear-gradient(135deg,#1565C0,#1E88E5);color:#fff;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;}
+.hero h2{font-size:22px;margin-bottom:6px;}
+.hero p{font-size:13px;opacity:0.9;margin-bottom:16px;}
+.hero-hours{background:rgba(255,255,255,0.2);border-radius:10px;padding:10px;font-size:13px;}
+.hero-hours strong{display:block;font-size:15px;}
+
+.section-title{font-size:16px;font-weight:700;margin-bottom:12px;color:#1565C0;}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+.quick-card{background:#fff;border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.07);transition:transform 0.15s,box-shadow 0.15s;border:2px solid transparent;}
+.quick-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,0.12);border-color:#1E88E5;}
+.quick-card .icon{font-size:32px;margin-bottom:8px;}
+.quick-card .label{font-size:13px;font-weight:600;}
+.quick-card .desc{font-size:11px;color:#666;margin-top:3px;}
+.info-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
+.info-card h4{font-size:14px;font-weight:700;margin-bottom:6px;color:#1565C0;}
+.info-card p,.info-card a{font-size:13px;color:#666;text-decoration:none;}
+.info-card a{color:#1E88E5;}
+
+.facility-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.facility-item{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.06);}
+.facility-item .ficon{font-size:28px;margin-bottom:6px;}
+.facility-item .fname{font-size:12px;font-weight:600;}
+.nicu-card{background:linear-gradient(135deg,#1a237e,#283593);color:#fff;border-radius:14px;padding:18px;margin-bottom:20px;}
+.nicu-card h3{font-size:16px;margin-bottom:10px;}
+.nicu-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.nicu-list li{font-size:12px;display:flex;align-items:center;gap:5px;opacity:0.95;}
+.nicu-list li::before{content:"✓";color:#80CBC4;font-weight:700;}
+
+.about-hero{background:linear-gradient(135deg,#0D47A1,#1565C0);color:#fff;border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;}
+.about-hero h2{font-size:20px;margin-bottom:8px;}
+.about-hero p{font-size:13px;opacity:0.9;line-height:1.6;}
+.mission-card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:4px solid #1565C0;}
+.mission-card h4{font-size:14px;font-weight:700;color:#1565C0;margin-bottom:6px;}
+.mission-card p{font-size:13px;color:#666;line-height:1.6;}
+
+.contact-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
+.contact-row{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;}
+.contact-row:last-child{margin-bottom:0;}
+.contact-icon{width:42px;height:42px;border-radius:50%;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.contact-info h4{font-size:13px;font-weight:700;margin-bottom:3px;}
+.contact-info p,.contact-info a{font-size:13px;color:#666;text-decoration:none;display:block;}
+.contact-info a{color:#1E88E5;font-weight:600;}
+.map-placeholder{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:14px;padding:24px;text-align:center;margin-bottom:16px;border:2px dashed #81C784;}
+.map-placeholder .map-icon{font-size:48px;margin-bottom:8px;}
+.map-placeholder p{font-size:13px;color:#388E3C;font-weight:600;}
+.map-placeholder small{font-size:12px;color:#555;}
+
+.btn{display:block;width:100%;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;margin-bottom:10px;transition:opacity 0.2s;}
+.btn:hover{opacity:0.88;}
+.btn-primary{background:#1565C0;color:#fff;}
+.btn-red{background:#C62828;color:#fff;}
+.btn-green{background:#2E7D32;color:#fff;}
+
+.form-group{margin-bottom:14px;}
+.form-group label{font-size:13px;font-weight:600;display:block;margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:1.5px solid #dde1e7;border-radius:10px;font-size:14px;background:#fff;outline:none;transition:border-color 0.2s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1E88E5;}
+.form-group textarea{resize:vertical;min-height:80px;}
+.success-msg{background:#E8F5E9;border:1.5px solid #A5D6A7;border-radius:12px;padding:16px;text-align:center;display:none;}
+.success-msg .tick{font-size:36px;margin-bottom:8px;}
+.success-msg h4{color:#2E7D32;font-size:16px;margin-bottom:4px;}
+.success-msg p{font-size:13px;color:#555;}
+
+.doctor-card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);display:flex;align-items:center;gap:14px;}
+.doctor-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#1E88E5);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.doctor-info h4{font-size:15px;font-weight:700;}
+.doctor-info p{font-size:12px;color:#666;margin-top:3px;}
+.badge{display:inline-block;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;margin-top:5px;}
+
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e0e0e0;display:flex;z-index:100;box-shadow:0 -2px 10px rgba(0,0,0,0.08);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;cursor:pointer;transition:color 0.2s;color:#999;border:none;background:none;}
+.nav-item.active{color:#1565C0;}
+.nav-item .ni{font-size:22px;}
+.nav-item .nl{font-size:10px;font-weight:600;margin-top:2px;}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.modal.open{display:flex;}
+.modal-box{background:#fff;border-radius:20px;padding:28px 24px;max-width:360px;width:100%;text-align:center;}
+.modal-box h3{font-size:20px;color:#C62828;margin-bottom:8px;}
+.modal-box p{font-size:13px;color:#555;margin-bottom:20px;}
+.modal-close{background:none;border:1.5px solid #ccc;padding:10px 24px;border-radius:10px;font-size:14px;cursor:pointer;margin-top:8px;width:100%;}
+
+.edit-panel{display:none;position:fixed;right:0;top:0;bottom:0;width:300px;background:#1a1a2e;color:#fff;z-index:400;overflow-y:auto;padding:20px;box-shadow:-4px 0 20px rgba(0,0,0,0.3);}
+.edit-panel.open{display:block;}
+.ep-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.ep-header h3{font-size:16px;font-weight:700;}
+.ep-close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;}
+.ep-section{margin-bottom:20px;}
+.ep-section h4{font-size:13px;font-weight:700;color:#F59E0B;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
+.ep-row{margin-bottom:12px;}
+.ep-row label{font-size:12px;color:#aaa;display:block;margin-bottom:4px;}
+.ep-row input,.ep-row select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #333;background:#252540;color:#fff;font-size:13px;outline:none;}
+.ep-row input:focus{border-color:#F59E0B;}
+.color-picker-row{display:flex;align-items:center;gap:10px;}
+.color-picker-row input[type=color]{width:40px;height:32px;border:none;border-radius:6px;cursor:pointer;background:none;padding:2px;}
+.apply-btn{background:#F59E0B;color:#1a1a2e;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:6px;}
+.add-btn{background:#1E88E5;color:#fff;border:none;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:6px;}
+.ep-note{font-size:11px;color:#888;margin-top:6px;line-height:1.5;}
+.facility-list-edit{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;}
+.fle-item{display:flex;align-items:center;gap:6px;}
+.fle-item input{flex:1;padding:6px 8px;border-radius:6px;border:1px solid #333;background:#252540;color:#fff;font-size:12px;}
+.fle-item button{background:#C62828;border:none;color:#fff;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:14px;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- EDIT BAR -->
+<div class="edit-bar" id="edit-bar" style="display:none;">
+  <div class="eb-left">
+    <span class="eb-badge">✏️ EDIT MODE</span>
+    <span style="font-size:12px;opacity:0.7">Click any text to edit it</span>
+  </div>
+  <button class="save-btn" onclick="exitEditMode()">✅ Done Editing</button>
+</div>
+
+<!-- TOP NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">🏥</div>
+    <div>
+      <div class="nav-title" id="edit-hospital-name" contenteditable="false">Hooda Children's Hospital</div>
+      <div class="nav-sub" id="edit-tagline" contenteditable="false">Child Specialist, Rohtak</div>
+    </div>
+  </div>
+  <button class="nav-emergency" onclick="openEmergency()">🚨 Emergency</button>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h2 id="edit-hero-title" contenteditable="false">Welcome to Hooda Hospital 👶</h2>
+    <p id="edit-hero-desc" contenteditable="false">India's dedicated children's healthcare centre in Rohtak, Haryana</p>
+    <div class="hero-hours">
+      <strong id="edit-hours-title" contenteditable="false">⏰ Open 24 Hours</strong>
+      <span id="edit-hours-desc" contenteditable="false">Emergency services always available</span><br>
+      <small id="edit-hours-note" contenteditable="false" style="opacity:0.8">Sunday Evening: Closed (OPD only)</small>
+    </div>
+  </div>
+  <div class="section-title">Quick Access</div>
+  <div class="quick-grid">
+    <div class="quick-card" onclick="goTo('appointment')"><div class="icon">📅</div><div class="label">Book Appointment</div><div class="desc">Schedule a visit</div></div>
+    <div class="quick-card" onclick="goTo('facilities')"><div class="icon">🏨</div><div class="label">Facilities</div><div class="desc">NICU & more</div></div>
+    <div class="quick-card" onclick="goTo('doctors')"><div class="icon">👨‍⚕️</div><div class="label">Our Doctors</div><div class="desc">Meet the team</div></div>
+    <div class="quick-card" onclick="goTo('contact')"><div class="icon">📍</div><div class="label">Contact & Map</div><div class="desc">Find us easily</div></div>
+  </div>
+  <div class="section-title">Contact Info</div>
+  <div class="info-card"><h4>📞 Phone</h4><p><a id="edit-phone-link" href="tel:+911262269269" contenteditable="false">+91-1262-269269</a></p></div>
+  <div class="info-card"><h4>📧 Email</h4><p><a id="edit-email-link" href="mailto:drrhooda@gmail.com" contenteditable="false">drrhooda@gmail.com</a></p></div>
+  <div class="info-card"><h4>📍 Address</h4><p id="edit-address" contenteditable="false">Gohana Road, Near Gohana Stand, Rohtak – 124001, Haryana</p></div>
+</div>
+
+<!-- FACILITIES PAGE -->
+<div class="page" id="page-facilities">
+  <div class="section-title">🏨 Our Facilities</div>
+  <div class="facility-grid" id="facility-grid">
+    <div class="facility-item"><div class="ficon">🩻</div><div class="fname" contenteditable="false">X-Ray</div></div>
+    <div class="facility-item"><div class="ficon">🚨</div><div class="fname" contenteditable="false">24-Hr Emergency</div></div>
+    <div class="facility-item"><div class="ficon">💡</div><div class="fname" contenteditable="false">Phototherapy</div></div>
+    <div class="facility-item"><div class="ficon">💨</div><div class="fname" contenteditable="false">Ventilator</div></div>
+    <div class="facility-item"><div class="ficon">🔆</div><div class="fname" contenteditable="false">Radiant Heat Warmer</div></div>
+    <div class="facility-item"><div class="ficon">👶</div><div class="fname" contenteditable="false">Nursery (NICU)</div></div>
+    <div class="facility-item"><div class="ficon">🫁</div><div class="fname" contenteditable="false">Central O₂ Supply</div></div>
+    <div class="facility-item"><div class="ficon">🧪</div><div class="fname" contenteditable="false">Laboratory</div></div>
+    <div class="facility-item"><div class="ficon">💉</div><div class="fname" contenteditable="false">Nebuliser</div></div>
+    <div class="facility-item"><div class="ficon">🩹</div><div class="fname" contenteditable="false">Vaccination</div></div>
+  </div>
+  <div class="nicu-card">
+    <h3>🍼 Advanced NICU</h3>
+    <ul class="nicu-list" id="nicu-list">
+      <li contenteditable="false">Mulipara Monitors</li>
+      <li contenteditable="false">Surfactant Therapy</li>
+      <li contenteditable="false">Ventilator</li>
+      <li contenteditable="false">Infusion Pump</li>
+      <li contenteditable="false">Double Surface Phototherapy</li>
+      <li contenteditable="false">Apnea Monitor</li>
+      <li contenteditable="false">Exchange Transfusion</li>
+      <li contenteditable="false">Pulse Oximeter</li>
+    </ul>
+  </div>
+  <div class="info-card" style="border-left:4px solid #E65100;">
+    <h4>⏰ Working Hours</h4>
+    <p id="edit-hours1" contenteditable="false">Monday – Saturday: 24 Hours</p>
+    <p id="edit-hours2" contenteditable="false">Sunday Morning: Open &nbsp;|&nbsp; Sunday Evening: Closed</p>
+  </div>
+</div>
+
+<!-- DOCTORS PAGE -->
+<div class="page" id="page-doctors">
+  <div class="section-title">👨‍⚕️ Doctor's Team</div>
+  <div id="doctors-list">
+    <div class="doctor-card">
+      <div class="doctor-avatar">👨‍⚕️</div>
+      <div class="doctor-info">
+        <h4 contenteditable="false">Dr. Ravinder Hooda</h4>
+        <p contenteditable="false">Child Specialist & Paediatrician</p>
+        <span class="badge" contenteditable="false">Lead Consultant</span>
+      </div>
+    </div>
+  </div>
+  <div class="info-card" style="text-align:center;padding:24px;">
+    <div style="font-size:40px;margin-bottom:10px;">🏥</div>
+    <h4 id="edit-about-short" contenteditable="false">Hooda Children's Hospital</h4>
+    <p style="margin-top:6px;line-height:1.6;font-size:13px;color:#666;" id="edit-about-short-desc" contenteditable="false">A dedicated team of child health specialists committed to providing the highest quality of paediatric care — from newborns to adolescents.</p>
+  </div>
+  <button class="btn btn-primary" onclick="goTo('appointment')">📅 Book an Appointment</button>
+</div>
+
+<!-- CONTACT PAGE -->
+<div class="page" id="page-contact">
+  <div class="section-title">📍 Find Us</div>
+  <div class="map-placeholder">
+    <div class="map-icon">🗺️</div>
+    <p id="edit-map-addr" contenteditable="false">Gohana Road, Near Gohana Stand</p>
+    <small id="edit-map-city" contenteditable="false">Rohtak – 124001, Haryana, India</small>
+    <br><br>
+    <a id="maps-link" href="https://maps.google.com/?q=Hooda+Hospital+Gohana+Road+Rohtak" target="_blank" style="background:#2E7D32;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;">🗺 Open in Google Maps</a>
+  </div>
+  <div class="contact-card">
+    <div class="contact-row"><div class="contact-icon">📞</div><div class="contact-info"><h4>Phone</h4><a id="edit-contact-phone" href="tel:+911262269269" contenteditable="false">+91-1262-269269</a></div></div>
+    <div class="contact-row"><div class="contact-icon">📧</div><div class="contact-info"><h4>Email</h4><a id="edit-contact-email" href="mailto:drrhooda@gmail.com" contenteditable="false">drrhooda@gmail.com</a></div></div>
+    <div class="contact-row"><div class="contact-icon">📍</div><div class="contact-info"><h4>Address</h4><p id="edit-contact-addr" contenteditable="false">Gohana Road, Near Gohana Stand, Rohtak – 124001</p></div></div>
+    <div class="contact-row" style="margin-bottom:0"><div class="contact-icon">⏰</div><div class="contact-info"><h4>Hours</h4><p id="edit-contact-hours" contenteditable="false">24/7 Emergency | Sun Eve: Closed</p></div></div>
+  </div>
+  <a id="call-btn" href="tel:+911262269269" class="btn btn-primary">📞 Call Now</a>
+  <button class="btn btn-red" onclick="openEmergency()">🚨 Emergency Line</button>
+</div>
+
+<!-- APPOINTMENT PAGE -->
+<div class="page" id="page-appointment">
+  <div class="section-title">📅 Book an Appointment</div>
+  <div id="appt-form">
+    <div class="info-card" style="margin-bottom:16px;background:#E3F2FD;">
+      <h4 style="color:#1565C0;">📋 Fill in the details below</h4>
+      <p>We will confirm your appointment shortly.</p>
+    </div>
+    <div class="form-group"><label>Child's Name *</label><input type="text" id="child-name" placeholder="Enter child's full name"></div>
+    <div class="form-group"><label>Child's Age *</label>
+      <select id="child-age">
+        <option value="">Select age group</option>
+        <option>Newborn (0–1 month)</option>
+        <option>Infant (1–12 months)</option>
+        <option>Toddler (1–3 years)</option>
+        <option>Child (3–12 years)</option>
+        <option>Adolescent (12–18 years)</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Parent/Guardian Name *</label><input type="text" id="parent-name" placeholder="Enter your name"></div>
+    <div class="form-group"><label>Phone Number *</label><input type="tel" id="phone" placeholder="+91 XXXXX XXXXX"></div>
+    <div class="form-group"><label>Preferred Date</label><input type="date" id="appt-date"></div>
+    <div class="form-group"><label>Reason for Visit</label><textarea id="reason" placeholder="Briefly describe the symptoms or reason..."></textarea></div>
+    <button class="btn btn-primary" onclick="submitAppt()">✅ Confirm Appointment</button>
+  </div>
+  <div class="success-msg" id="success-msg">
+    <div class="tick">✅</div>
+    <h4>Appointment Request Sent!</h4>
+    <p>Thank you! We will call you shortly to confirm your appointment.</p>
+    <br><p style="font-weight:700" id="success-phone">📞 +91-1262-269269</p>
+    <button class="btn btn-primary" style="margin-top:16px" onclick="resetForm()">Book Another</button>
+  </div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div class="page" id="page-about">
+  <div class="about-hero">
+    <h2>🏥 About Hooda Hospital</h2>
+    <p id="edit-about-sub" contenteditable="false">A unique centre of excellence for children's healthcare in Haryana, established in 2006.</p>
+  </div>
+  <div class="mission-card"><h4>🌟 Our Mission</h4><p id="edit-mission" contenteditable="false">We have dedicated ourselves to providing the highest quality of care to every child we serve — combining compassion, expertise, and world-class technology.</p></div>
+  <div class="mission-card"><h4>🔭 Our Vision</h4><p id="edit-vision" contenteditable="false">To reach out to every child in India, extending the entire spectrum of children's healthcare services — from the newborn to the adolescent — in a single integrated facility.</p></div>
+  <div class="mission-card"><h4>🏗️ Our Story</h4><p id="edit-story" contenteditable="false">The idea of building a world-class children's hospital in Haryana was born over two decades ago. With state-of-the-art equipment and dedicated specialists, Hooda Children's Hospital offers primary, secondary, and tertiary care all under one roof.</p></div>
+  <button class="btn btn-primary" onclick="goTo('appointment')">📅 Book an Appointment</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="goTo('home')" id="nav-home"><span class="ni">🏠</span><span class="nl">Home</span></button>
+  <button class="nav-item" onclick="goTo('facilities')" id="nav-facilities"><span class="ni">🏨</span><span class="nl">Facilities</span></button>
+  <button class="nav-item" onclick="goTo('appointment')" id="nav-appointment"><span class="ni">📅</span><span class="nl">Appointment</span></button>
+  <button class="nav-item" onclick="goTo('doctors')" id="nav-doctors"><span class="ni">👨‍⚕️</span><span class="nl">Doctors</span></button>
+  <button class="nav-item" onclick="goTo('contact')" id="nav-contact"><span class="ni">📍</span><span class="nl">Contact</span></button>
+</nav>
+
+<!-- EMERGENCY MODAL -->
+<div class="modal" id="emergency-modal">
+  <div class="modal-box">
+    <h3>🚨 Emergency</h3>
+    <p>For immediate medical emergencies, call us directly. We are open 24 hours.</p>
+    <a id="emerg-call" href="tel:+911262269269" class="btn btn-red">📞 Call +91-1262-269269</a>
+    <a id="emerg-email" href="mailto:drrhooda@gmail.com" class="btn btn-primary">📧 drrhooda@gmail.com</a>
+    <button class="modal-close" onclick="closeEmergency()">Close</button>
+  </div>
+</div>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="edit-panel">
+  <div class="ep-header">
+    <h3>⚙️ Customise App</h3>
+    <button class="ep-close" onclick="togglePanel()">✕</button>
+  </div>
+  <div class="ep-section">
+    <h4>🎨 Theme Color</h4>
+    <div class="ep-row">
+      <label>Primary Color</label>
+      <div class="color-picker-row">
+        <input type="color" id="color-primary" value="#1565C0">
+        <input type="text" id="color-primary-hex" value="#1565C0" placeholder="#1565C0" style="flex:1">
+      </div>
+    </div>
+    <button class="apply-btn" onclick="applyColor()">Apply Color</button>
+  </div>
+  <div class="ep-section">
+    <h4>🏥 Hospital Info</h4>
+    <div class="ep-row"><label>Hospital Name</label><input type="text" id="ep-name" value="Hooda Children's Hospital"></div>
+    <div class="ep-row"><label>Tagline</label><input type="text" id="ep-tagline" value="Child Specialist, Rohtak"></div>
+    <div class="ep-row"><label>Phone</label><input type="text" id="ep-phone" value="+91-1262-269269"></div>
+    <div class="ep-row"><label>Email</label><input type="text" id="ep-email" value="drrhooda@gmail.com"></div>
+    <div class="ep-row"><label>Address</label><input type="text" id="ep-addr" value="Gohana Road, Near Gohana Stand, Rohtak – 124001"></div>
+    <button class="apply-btn" onclick="applyInfo()">Apply Info</button>
+  </div>
+  <div class="ep-section">
+    <h4>👨‍⚕️ Add Doctor</h4>
+    <div class="ep-row"><label>Doctor Name</label><input type="text" id="ep-doc-name" placeholder="Dr. Name"></div>
+    <div class="ep-row"><label>Speciality</label><input type="text" id="ep-doc-spec" placeholder="e.g. Neonatologist"></div>
+    <div class="ep-row"><label>Badge</label><input type="text" id="ep-doc-badge" placeholder="e.g. Consultant"></div>
+    <button class="add-btn" onclick="addDoctor()">+ Add Doctor</button>
+  </div>
+  <div class="ep-section">
+    <h4>🏨 Edit Facilities</h4>
+    <div class="facility-list-edit" id="facility-edit-list"></div>
+    <button class="add-btn" onclick="addFacility()">+ Add Facility</button>
+  </div>
+  <div class="ep-section">
+    <h4>🗺️ Google Maps Link</h4>
+    <div class="ep-row"><label>Maps Search Term</label><input type="text" id="ep-maps" value="Hooda+Hospital+Gohana+Road+Rohtak"></div>
+    <button class="apply-btn" onclick="applyMaps()">Apply Map</button>
+  </div>
+</div>
+
+<!-- FAB BUTTONS -->
+<div id="fab-edit" style="position:fixed;bottom:88px;right:16px;z-index:150;">
+  <button onclick="enterEditMode()" style="background:#F59E0B;color:#1a1a2e;border:none;width:52px;height:52px;border-radius:50%;font-size:22px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);font-weight:700;" title="Customise App">✏️</button>
+</div>
+<div id="fab-settings" style="position:fixed;bottom:88px;right:80px;z-index:150;display:none;">
+  <button onclick="togglePanel()" style="background:#1565C0;color:#fff;border:none;width:52px;height:52px;border-radius:50%;font-size:22px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.25);" title="App Settings">⚙️</button>
+</div>
+
+<script>
+const today=new Date().toISOString().split('T')[0];
+document.getElementById('appt-date').min=today;
+
+function goTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const nb=document.getElementById('nav-'+page);
+  if(nb)nb.classList.add('active');
+  window.scrollTo(0,0);
+}
+function openEmergency(){document.getElementById('emergency-modal').classList.add('open');}
+function closeEmergency(){document.getElementById('emergency-modal').classList.remove('open');}
+function submitAppt(){
+  const n=document.getElementById('child-name').value.trim();
+  const p=document.getElementById('parent-name').value.trim();
+  const ph=document.getElementById('phone').value.trim();
+  if(!n||!p||!ph){alert('Please fill in the required fields.');return;}
+  document.getElementById('appt-form').style.display='none';
+  document.getElementById('success-msg').style.display='block';
+}
+function resetForm(){
+  document.getElementById('appt-form').style.display='block';
+  document.getElementById('success-msg').style.display='none';
+  ['child-name','parent-name','phone','reason'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('child-age').value='';
+  document.getElementById('appt-date').value='';
+}
+let editMode=false;
+function enterEditMode(){
+  editMode=true;
+  document.getElementById('edit-bar').style.display='flex';
+  document.body.classList.add('edit-mode');
+  document.querySelector('.nav').style.top='44px';
+  document.querySelectorAll('[contenteditable]').forEach(el=>el.setAttribute('contenteditable','true'));
+  document.getElementById('fab-edit').style.display='none';
+  document.getElementById('fab-settings').style.display='block';
+  buildFacilityEditList();
+}
+function exitEditMode(){
+  editMode=false;
+  document.getElementById('edit-bar').style.display='none';
+  document.body.classList.remove('edit-mode');
+  document.querySelector('.nav').style.top='0';
+  document.querySelectorAll('[contenteditable]').forEach(el=>el.setAttribute('contenteditable','false'));
+  document.getElementById('edit-panel').classList.remove('open');
+  document.getElementById('fab-edit').style.display='block';
+  document.getElementById('fab-settings').style.display='none';
+}
+function togglePanel(){document.getElementById('edit-panel').classList.toggle('open');}
+function applyColor(){
+  const hex=document.getElementById('color-primary-hex').value.trim()||document.getElementById('color-primary').value;
+  document.getElementById('color-primary').value=hex;
+  document.querySelector('.nav').style.background=hex;
+  document.querySelectorAll('.btn-primary').forEach(b=>b.style.background=hex);
+  document.querySelectorAll('.section-title').forEach(e=>e.style.color=hex);
+  document.querySelectorAll('.info-card h4').forEach(e=>e.style.color=hex);
+  document.querySelectorAll('.mission-card').forEach(e=>e.style.borderColor=hex);
+  document.querySelectorAll('.mission-card h4').forEach(e=>e.style.color=hex);
+  document.querySelectorAll('.badge').forEach(e=>e.style.color=hex);
+  document.querySelectorAll('.contact-info a').forEach(e=>e.style.color=hex);
+}
+document.getElementById('color-primary').addEventListener('input',function(){
+  document.getElementById('color-primary-hex').value=this.value;
+});
+function applyInfo(){
+  const name=document.getElementById('ep-name').value;
+  const tag=document.getElementById('ep-tagline').value;
+  const ph=document.getElementById('ep-phone').value;
+  const em=document.getElementById('ep-email').value;
+  const addr=document.getElementById('ep-addr').value;
+  document.getElementById('edit-hospital-name').textContent=name;
+  document.getElementById('edit-tagline').textContent=tag;
+  ['edit-phone-link','edit-contact-phone'].forEach(id=>{const el=document.getElementById(id);el.textContent=ph;el.href='tel:'+ph.replace(/[^0-9+]/g,'');});
+  ['edit-email-link','edit-contact-email'].forEach(id=>{const el=document.getElementById(id);el.textContent=em;el.href='mailto:'+em;});
+  ['edit-address','edit-contact-addr'].forEach(id=>document.getElementById(id).textContent=addr);
+  document.getElementById('emerg-call').textContent='📞 Call '+ph;
+  document.getElementById('emerg-email').textContent='📧 '+em;
+  document.getElementById('success-phone').textContent='📞 '+ph;
+  document.getElementById('call-btn').href='tel:'+ph.replace(/[^0-9+]/g,'');
+}
+function addDoctor(){
+  const name=document.getElementById('ep-doc-name').value.trim();
+  const spec=document.getElementById('ep-doc-spec').value.trim();
+  const badge=document.getElementById('ep-doc-badge').value.trim();
+  if(!name)return alert('Enter doctor name.');
+  const card=document.createElement('div');
+  card.className='doctor-card';
+  card.innerHTML=`<div class="doctor-avatar">👩‍⚕️</div><div class="doctor-info"><h4 contenteditable="${editMode}">${name}</h4><p contenteditable="${editMode}">${spec||'Specialist'}</p><span class="badge" contenteditable="${editMode}">${badge||'Consultant'}</span></div>`;
+  document.getElementById('doctors-list').appendChild(card);
+  document.getElementById('ep-doc-name').value='';
+  document.getElementById('ep-doc-spec').value='';
+  document.getElementById('ep-doc-badge').value='';
+}
+function buildFacilityEditList(){
+  const list=document.getElementById('facility-edit-list');
+  list.innerHTML='';
+  document.querySelectorAll('#facility-grid .fname').forEach((el,i)=>{
+    const row=document.createElement('div');row.className='fle-item';
+    row.innerHTML=`<input value="${el.textContent}" data-index="${i}"><button onclick="removeFacility(${i})">✕</button>`;
+    row.querySelector('input').addEventListener('input',function(){document.querySelectorAll('#facility-grid .fname')[i].textContent=this.value;});
+    list.appendChild(row);
+  });
+}
+function removeFacility(i){
+  const items=document.querySelectorAll('#facility-grid .facility-item');
+  if(items[i])items[i].remove();
+  buildFacilityEditList();
+}
+function addFacility(){
+  const grid=document.getElementById('facility-grid');
+  const div=document.createElement('div');div.className='facility-item';
+  div.innerHTML=`<div class="ficon">➕</div><div class="fname" contenteditable="${editMode}">New Facility</div>`;
+  grid.appendChild(div);
+  buildFacilityEditList();
+}
+function applyMaps(){
+  const q=document.getElementById('ep-maps').value.trim();
+  const url=q.startsWith('http')?q:`https://maps.google.com/?q=${q}`;
+  document.getElementById('maps-link').href=url;
+}
+</script>
+</body>
+</html>
